@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Results | Needleman-Wunsch Sequence Analyzer{% endblock %}
+
+{% block content %}
+  <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+    <div>
+      <h1 class="h3 mb-1">Alignment results</h1>
+      <div class="text-secondary small">
+        Type: <span class="fw-semibold text-body">{{ seq_type }}</span> ·
+        Scoring: match {{ scoring.match_score }}, mismatch {{ scoring.mismatch_penalty }}, gap {{ scoring.gap_penalty }}
+      </div>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">New analysis</a>
+      <button id="copyAlignmentBtn" type="button" class="btn btn-outline-primary">Copy alignment</button>
+      <button id="downloadTxtBtn" type="button" class="btn btn-primary">Download TXT</button>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-12 col-lg-7">
+      <div class="card shadow-sm rounded-4">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+            <h2 class="h5 mb-0">Alignment</h2>
+            <span class="badge bg-primary-subtle text-primary-emphasis">
+              Score: <span class="fw-semibold">{{ alignment.score }}</span>
+            </span>
+          </div>
+
+          <div class="alignment-block rounded-3 border bg-body-tertiary p-3">
+            <pre class="mb-0 font-mono" id="alignmentText">{{ alignment.aligned1 }}
+{{ alignment.match_line }}
+{{ alignment.aligned2 }}</pre>
+          </div>
+
+          <div id="copyToast" class="alert alert-success mt-3 d-none" role="alert">
+            Copied to clipboard.
+          </div>
+        </div>
+      </div>
+
+      <div class="card shadow-sm rounded-4 mt-4">
+        <div class="card-body p-4">
+          <h2 class="h5 mb-3">Metrics</h2>
+          <div class="row g-3">
+            <div class="col-6 col-md-3">
+              <div class="metric-card p-3 rounded-3 border bg-body">
+                <div class="text-secondary small">Matches</div>
+                <div class="h4 mb-0">{{ metrics.matches }}</div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="metric-card p-3 rounded-3 border bg-body">
+                <div class="text-secondary small">Mismatches</div>
+                <div class="h4 mb-0">{{ metrics.mismatches }}</div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="metric-card p-3 rounded-3 border bg-body">
+                <div class="text-secondary small">Gaps</div>
+                <div class="h4 mb-0">{{ metrics.gaps }}</div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="metric-card p-3 rounded-3 border bg-body">
+                <div class="text-secondary small">Identity</div>
+                <div class="h4 mb-0">{{ "%.2f"|format(metrics.identity_pct) }}%</div>
+              </div>
+            </div>
+          </div>
+          <div class="small text-secondary mt-3">
+            Identity is computed as matches / alignment length ({{ metrics.aligned_length }}).
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-5">
+      <div class="card shadow-sm rounded-4">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+            <h2 class="h5 mb-0">Scoring matrix</h2>
+            <span class="text-secondary small">Traceback highlighted</span>
+          </div>
+
+          <div class="matrix-scroll border rounded-3">
+            <table class="table table-sm table-bordered mb-0 matrix-table">
+              <thead class="table-light sticky-top">
+                <tr>
+                  <th class="matrix-header"></th>
+                  {% for c in col_labels %}
+                    <th class="matrix-header text-center">{{ c }}</th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody>
+                {% for i in range(row_labels|length) %}
+                  <tr>
+                    <th class="matrix-header table-light sticky-col">{{ row_labels[i] }}</th>
+                    {% for j in range(col_labels|length) %}
+                      {% set in_path = (i, j) in traceback_set %}
+                      {% set is_final = (i, j) == final_cell %}
+                      <td class="text-center matrix-cell
+                                 {{ 'traceback-cell' if in_path else '' }}
+                                 {{ 'final-cell' if is_final else '' }}">
+                        {{ matrix[i][j] }}
+                      </td>
+                    {% endfor %}
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="small text-secondary mt-3">
+            Rows correspond to Sequence 1 ({{ input_seq1|length }}), columns to Sequence 2 ({{ input_seq2|length }}).
+            The bottom-right cell is the optimal global alignment score.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+

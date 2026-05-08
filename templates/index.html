@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Analyze | Needleman-Wunsch Sequence Analyzer{% endblock %}
+
+{% block content %}
+  <div class="row g-4 align-items-stretch">
+    <div class="col-12">
+      <div class="hero-card p-4 p-md-5 rounded-4 shadow-sm border bg-body">
+        <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+          <div>
+            <h1 class="display-6 fw-bold mb-2">Needleman–Wunsch Sequence Analyzer</h1>
+            <p class="text-secondary mb-0">
+              Global sequence alignment for DNA, RNA, and proteins. Configure scoring, run alignment, and inspect the scoring matrix with traceback.
+            </p>
+          </div>
+          <div class="d-flex gap-2">
+            <a class="btn btn-outline-primary" href="{{ url_for('about') }}">How it works</a>
+            <button class="btn btn-primary" type="button" onclick="document.getElementById('sequence1').focus()">Start</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-7">
+      <div class="card shadow-sm rounded-4 h-100">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+            <h2 class="h5 mb-0">Alignment input</h2>
+            <button id="resetBtn" type="button" class="btn btn-outline-secondary btn-sm">Reset</button>
+          </div>
+
+          {% if errors %}
+            <div class="alert alert-danger">
+              <div class="fw-semibold mb-1">Please fix the following:</div>
+              <ul class="mb-0">
+                {% for e in errors %}
+                  <li>{{ e }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
+          <form id="analyzeForm" method="post" action="{{ url_for('analyze') }}" novalidate>
+            <div class="mb-3">
+              <label for="sequence1" class="form-label fw-semibold">Sequence 1</label>
+              <textarea class="form-control font-mono" id="sequence1" name="sequence1" rows="4" placeholder="e.g., ATCGTA or FASTA input" required>{{ form_data.sequence1 if form_data else "" }}</textarea>
+              <div class="form-text">Whitespace is ignored. FASTA headers (lines starting with <span class="font-mono">&gt;</span>) are ignored.</div>
+              <div class="invalid-feedback">Sequence 1 is required.</div>
+            </div>
+
+            <div class="mb-3">
+              <label for="sequence2" class="form-label fw-semibold">Sequence 2</label>
+              <textarea class="form-control font-mono" id="sequence2" name="sequence2" rows="4" placeholder="e.g., ATC- not allowed (use letters only)" required>{{ form_data.sequence2 if form_data else "" }}</textarea>
+              <div class="invalid-feedback">Sequence 2 is required.</div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-12 col-md-4">
+                <label for="sequence_type" class="form-label fw-semibold">Sequence type</label>
+                <select class="form-select" id="sequence_type" name="sequence_type" required>
+                  {% set t = form_data.sequence_type if form_data else "DNA" %}
+                  <option value="DNA" {{ "selected" if t == "DNA" else "" }}>DNA (A,T,C,G)</option>
+                  <option value="RNA" {{ "selected" if t == "RNA" else "" }}>RNA (A,U,C,G)</option>
+                  <option value="Protein" {{ "selected" if t == "Protein" else "" }}>Protein (20 amino acids)</option>
+                </select>
+              </div>
+
+              <div class="col-12 col-md-4">
+                <label for="match_score" class="form-label fw-semibold">Match score</label>
+                <input class="form-control" id="match_score" name="match_score" type="number" step="1" value="{{ form_data.match_score if form_data else 1 }}" required />
+              </div>
+
+              <div class="col-12 col-md-4">
+                <label for="mismatch_penalty" class="form-label fw-semibold">Mismatch penalty</label>
+                <input class="form-control" id="mismatch_penalty" name="mismatch_penalty" type="number" step="1" value="{{ form_data.mismatch_penalty if form_data else -1 }}" required />
+              </div>
+
+              <div class="col-12 col-md-4">
+                <label for="gap_penalty" class="form-label fw-semibold">Gap penalty</label>
+                <input class="form-control" id="gap_penalty" name="gap_penalty" type="number" step="1" value="{{ form_data.gap_penalty if form_data else -2 }}" required />
+              </div>
+
+              <div class="col-12">
+                {% set amb = form_data.allow_ambiguous if form_data else false %}
+                <div class="form-check mt-1">
+                  <input class="form-check-input" type="checkbox" value="on" id="allow_ambiguous" name="allow_ambiguous" {{ "checked" if amb else "" }}>
+                  <label class="form-check-label" for="allow_ambiguous">
+                    Allow ambiguity codes (DNA/RNA: R,Y,S,W,K,M,B,D,H,V,N · Protein: B,Z,X)
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 align-items-center mt-4">
+              <button id="analyzeBtn" class="btn btn-primary" type="submit">
+                Analyze
+              </button>
+              <div id="loadingSpinner" class="spinner-border text-primary ms-2 d-none" role="status" aria-hidden="true"></div>
+              <span id="loadingText" class="text-secondary small d-none">Running alignment…</span>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-5">
+      <div class="card shadow-sm rounded-4 h-100">
+        <div class="card-body p-4">
+          <h2 class="h5">Quick tips</h2>
+          <ul class="text-secondary mb-0">
+            <li><span class="fw-semibold text-body">DNA</span>: use A, T, C, G only.</li>
+            <li><span class="fw-semibold text-body">RNA</span>: use A, U, C, G only.</li>
+            <li><span class="fw-semibold text-body">Protein</span>: 20-letter alphabet (A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y).</li>
+            <li>Typical scoring: match \(+1\), mismatch \(-1\), gap \(-2\).</li>
+          </ul>
+          <hr />
+          <div class="small text-secondary">
+            This app runs entirely locally with Flask—no external APIs or services.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
