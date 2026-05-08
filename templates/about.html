@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}About | Needleman-Wunsch Sequence Analyzer{% endblock %}
+
+{% block content %}
+  <div class="row g-4">
+    <div class="col-12">
+      <div class="card shadow-sm rounded-4">
+        <div class="card-body p-4 p-md-5">
+          <h1 class="h3 mb-3">About Needleman–Wunsch</h1>
+          <p class="text-secondary">
+            The <span class="fw-semibold text-body">Needleman–Wunsch</span> algorithm performs
+            <span class="fw-semibold text-body">global sequence alignment</span> by using dynamic programming to find the
+            optimal end-to-end alignment between two sequences.
+          </p>
+
+          <div class="row g-3">
+            <div class="col-12 col-lg-6">
+              <div class="p-4 rounded-4 border bg-body">
+                <h2 class="h5">Core idea</h2>
+                <p class="text-secondary mb-0">
+                  Build a scoring matrix \(F\) where each cell \(F[i][j]\) stores the best score for aligning the first
+                  \(i\) characters of sequence 1 to the first \(j\) characters of sequence 2. Then perform a traceback from
+                  the bottom-right cell to recover an optimal alignment.
+                </p>
+              </div>
+            </div>
+            <div class="col-12 col-lg-6">
+              <div class="p-4 rounded-4 border bg-body">
+                <h2 class="h5">Scoring model</h2>
+                <ul class="text-secondary mb-0">
+                  <li><span class="fw-semibold text-body">Match</span>: add match score</li>
+                  <li><span class="fw-semibold text-body">Mismatch</span>: add mismatch penalty (usually negative)</li>
+                  <li><span class="fw-semibold text-body">Gap</span>: add gap penalty (usually negative)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <hr class="my-4" />
+
+          <h2 class="h5">Matrix recurrence</h2>
+          <div class="rounded-4 border bg-body-tertiary p-3 p-md-4 font-mono">
+            <div>F[i][j] = max(</div>
+            <div class="ms-3">F[i-1][j-1] + s(xᵢ, yⱼ),</div>
+            <div class="ms-3">F[i-1][j] + gap,</div>
+            <div class="ms-3">F[i][j-1] + gap</div>
+            <div>)</div>
+          </div>
+
+          <div class="mt-4 d-flex flex-wrap gap-2">
+            <a class="btn btn-primary" href="{{ url_for('index') }}">Run an analysis</a>
+            <a class="btn btn-outline-secondary" href="{{ url_for('index') }}#">Back</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+

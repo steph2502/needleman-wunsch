@@ -1,0 +1,68 @@
+:root {
+  --nw-blue: #0d6efd;
+}
+
+body {
+  background: linear-gradient(180deg, rgba(13, 110, 253, 0.06), rgba(13, 110, 253, 0.00) 280px);
+}
+
+.hero-card {
+  background-image: radial-gradient(circle at 20% 20%, rgba(13, 110, 253, 0.18), transparent 45%),
+    radial-gradient(circle at 80% 0%, rgba(13, 110, 253, 0.12), transparent 40%);
+}
+
+.font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.alignment-block pre {
+  white-space: pre;
+  overflow-x: auto;
+  line-height: 1.35;
+}
+
+.matrix-scroll {
+  max-height: 60vh;
+  overflow: auto;
+  background: var(--bs-body-bg);
+}
+
+.matrix-table .matrix-header {
+  min-width: 44px;
+  font-weight: 700;
+}
+
+.matrix-table .matrix-cell {
+  min-width: 44px;
+  padding: 0.35rem 0.25rem;
+}
+
+.traceback-cell {
+  background: rgba(13, 110, 253, 0.18) !important;
+}
+
+.final-cell {
+  background: rgba(25, 135, 84, 0.18) !important;
+  box-shadow: inset 0 0 0 2px rgba(25, 135, 84, 0.55);
+  font-weight: 700;
+}
+
+.sticky-col {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+}
+
+/* Dark mode refinements */
+html[data-bs-theme="dark"] body {
+  background: radial-gradient(circle at 30% 0%, rgba(13, 110, 253, 0.18), transparent 55%);
+}
+
+html[data-bs-theme="dark"] .traceback-cell {
+  background: rgba(13, 110, 253, 0.28) !important;
+}
+
+html[data-bs-theme="dark"] .final-cell {
+  background: rgba(25, 135, 84, 0.22) !important;
+}
+
